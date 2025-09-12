@@ -1,46 +1,32 @@
 name: CI
-
-on:
-  push:
-  pull_request:
+on: [push, pull_request]
 
 jobs:
   build:
     runs-on: ubuntu-24.04
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Install build deps
-        run: |
+      - uses: actions/checkout@v4
+      - run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends build-essential cmake
-          cmake --version
-          gcc --version
-
-      - name: Configure
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-
-      - name: Build
-        run: cmake --build build
-
-      - name: Upload build artifacts
+      - run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+      - run: cmake --build build
+      - name: Upload build dir
         uses: actions/upload-artifact@v4
         with:
-          name: build-output
+          name: build-linux
           path: build/
+          retention-days: 1
 
   test:
     runs-on: ubuntu-24.04
     needs: build
     steps:
-      - name: Download build artifacts
+      - uses: actions/checkout@v4
+      - name: Download build
         uses: actions/download-artifact@v4
         with:
-          name: build-output
-          path: build/
-
+          name: build-linux
+          path: build
       - name: Run tests
-        run: |
-          chmod +x build/test/test_my_math
-          ./build/test/test_my_math --verbose
+        run: ctest --test-dir build --verbose
