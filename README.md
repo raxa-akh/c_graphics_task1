@@ -1,3 +1,4 @@
+akhmedov r g
 # c_graphics_task1
 
 1. create an empty public github repo 
